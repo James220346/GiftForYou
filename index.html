@@ -372,12 +372,9 @@
         audioControls.src = bgMusic.querySelector('source').src;
 
         function startExperience() {
-            audioControls.volume = 0.5; audioControls.play().catch(()=>{}); bgMusic.play().catch(()=>{});
+            audioControls.volume = 0.5; audioControls.play().catch(()=>{});
             goToPage(1); setTimeout(initScratchCard, 1000);
         }
-        audioControls.addEventListener('play', () => bgMusic.play());
-        audioControls.addEventListener('pause', () => bgMusic.pause());
-
         function goToPage(pageNum) {
             document.querySelectorAll('.page-container').forEach(page => page.classList.remove('active'));
             document.getElementById(`page-${pageNum}`).classList.add('active');
