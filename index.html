@@ -1,0 +1,667 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>พื้นที่พิเศษของคุณ ✨</title>
+
+    <!-- นำเข้าฟอนต์ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mali: ['Mali', 'cursive'], prompt: ['Prompt', 'sans-serif'], },
+                    colors: {
+                        theme: { dark: '#050b14', card: 'rgba(15, 23, 42, 0.4)', pink: '#ff2a85', purple: '#8a2be2', glow: '#ff7eb3' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* สไตล์พื้นฐาน */
+        body { background-color: #050b14; color: #f8fafc; overflow: hidden; touch-action: none; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        
+        /* พื้นหลังจักรวาลแบบล้ำๆ */
+        .galaxy-bg { position: absolute; inset: 0; z-index: 0; background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #050b14 100%); overflow: hidden; }
+        .nebula { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float-nebula 10s ease-in-out infinite alternate; pointer-events: none; }
+        @keyframes float-nebula { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, -30px) scale(1.2); } }
+        #star-canvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+        /* โครงสร้างหน้า */
+        .page-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: scale(1.1) translateY(30px); z-index: 10; padding: 1.5rem;
+        }
+        .page-container.active { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); z-index: 20; }
+        
+        /* กล่องเนื้อหาแบบกระจกพรีเมียม */
+        .glass-card {
+            background: rgba(20, 25, 45, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 2rem;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+            padding: 2.5rem 1.5rem; text-align: center; width: 100%; max-width: 420px;
+            max-height: 90vh; overflow-y: auto; scrollbar-width: none;
+        }
+        .glass-card::-webkit-scrollbar { display: none; }
+
+        /* ของขวัญเรืองแสง */
+        .gift-wrapper { position: relative; cursor: pointer; }
+        .gift-btn { animation: hover-float 3s ease-in-out infinite; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .gift-wrapper:hover .gift-btn { transform: scale(1.15) rotate(5deg); }
+        .gift-glow { position: absolute; inset: -20px; background: radial-gradient(circle, rgba(255,42,133,0.6) 0%, transparent 70%); filter: blur(20px); z-index: -1; animation: pulse-glow 2s infinite; }
+        @keyframes hover-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+
+        /* ================= ฟีเจอร์ใหม่ 1: ขูดการ์ด (Scratch Card) ================= */
+        .scratch-container { position: relative; width: 100%; height: 200px; border-radius: 1.5rem; overflow: hidden; margin-bottom: 1.5rem; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .scratch-text-bg { position: absolute; inset: 0; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; z-index: 1; }
+        #scratch-canvas { position: absolute; inset: 0; z-index: 2; cursor: pointer; touch-action: none; }
+        .scratch-hint { animation: fade-bounce 2s infinite; }
+        @keyframes fade-bounce { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-5px); } }
+
+        /* ================= สไลด์ 3D & แผ่นเสียง ================= */
+        .swiper { width: 100%; padding: 10px 0 30px 0; overflow: visible; }
+        .swiper-slide { width: 220px; height: 300px; border-radius: 1.5rem; overflow: hidden; border: 3px solid rgba(255, 255, 255, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        .swiper-slide  { width: 100%; height: 100%; object-fit: cover; }
+        .swiper-pagination-bullet { background-color: #ff7eb3 !important; }
+
+        .vinyl-record { width: 55px; height: 55px; border-radius: 50%; background: repeating-radial-gradient(#111 0, #111 2px, #222 3px, #222 4px); border: 2px solid #444; display: flex; align-items: center; justify-content: center; animation: spin 4s linear infinite; animation-play-state: paused; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .vinyl-record.playing { animation-play-state: running; }
+        .vinyl-center { width: 16px; height: 16px; background-color: #ff2a85; border-radius: 50%; border: 2px solid #111; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        audio { width: 100%; height: 40px; margin-top: 10px; border-radius: 20px; outline: none; }
+        audio::-webkit-media-controls-panel { background-color: rgba(255,255,255,0.1); }
+        audio::-webkit-media-controls-current-time-display, audio::-webkit-media-controls-time-remaining-display { color: white; }
+
+        /* ================= ฟีเจอร์ใหม่ 2: ชาร์จพลัง (Hold to Charge) ================= */
+        .charge-container { position: relative; width: 120px; height: 120px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: none; }
+        .charge-circle-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
+        .charge-circle { fill: none; stroke: url(#gradient); stroke-width: 8; stroke-dasharray: 339.292; stroke-dashoffset: 339.292; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.1s linear; }
+        .charge-icon { position: absolute; font-size: 2.5rem; color: #fff; transition: all 0.3s; pointer-events: none; text-shadow: 0 0 15px rgba(255,42,133,0.8); }
+        .charging .charge-icon { animation: tremble 0.5s infinite; filter: drop-shadow(0 0 10px #ff2a85); transform: scale(1.1); }
+        @keyframes tremble { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-1px, -2px) rotate(-1deg); } 50% { transform: translate(-3px, 0px) rotate(1deg); } 75% { transform: translate(3px, 2px) rotate(0deg); } 100% { transform: translate(1px, -1px) rotate(-1deg); } }
+
+        /* โคมลอย (Lanterns) */
+        .lantern { position: absolute; bottom: -50px; width: 30px; height: 45px; background: linear-gradient(to bottom, #ff9a9e 0%, #fecfef 100%); border-radius: 10px 10px 5px 5px; box-shadow: 0 0 20px #ff9a9e, inset 0 -10px 15px rgba(255,255,0,0.5); z-index: 50; animation: float-up var(--duration) ease-in forwards; pointer-events: none; }
+        .lantern::after { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 15px; height: 5px; background: #ffaa00; border-radius: 50%; box-shadow: 0 5px 10px #ff5500; }
+        @keyframes float-up { 0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(-120vh) translateX(var(--drift)) scale(1.5) rotate(var(--rot)); opacity: 0; } }
+
+        /* ================= ฟีเจอร์ใหม่ 3: กล้อง & รอล้างรูป (Developing) ================= */
+        .camera-container { width: 100%; aspect-ratio: 3/4; background-color: #000; border-radius: 1rem; overflow: hidden; position: relative; border: 2px solid rgba(255,255,255,0.2); }
+        #videoElement { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #photoCanvas { display: none; }
+        
+        .polaroid { background: white; padding: 12px 12px 40px 12px; border-radius: 4px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); transform: rotate(-3deg); transition: transform 0.3s; display: none; margin: 0 auto; width: 80%; }
+        .polaroid:hover { transform: rotate(0deg) scale(1.05); }
+        .polaroid--container { width: 100%; aspect-ratio: 3/4; overflow: hidden; background: #ddd; position: relative; }
+        
+        /* เอฟเฟกต์รูปรอล้าง */
+        #photoResult { width: 100%; height: 100%; object-fit: cover; filter: brightness(5) contrast(0) grayscale(1); transition: filter 4s cubic-bezier(0.25, 0.1, 0.25, 1); }
+        #photoResult.developed { filter: brightness(1) contrast(1.1) grayscale(0); }
+        
+        .polaroid-caption { color: #222; font-family: 'Mali', cursive; font-size: 1.2rem; font-weight: bold; margin-top: 10px; }
+        .camera-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 50; }
+        @keyframes flash-anim { 0% { opacity: 1; } 100% { opacity: 0; } }
+        input[type="file"] { display: none; }
+
+        /* ปุ่มพรีเมียม */
+        .btn-premium {
+            background: linear-gradient(135deg, #ff2a85, #8a2be2); color: white; font-family: 'Mali', cursive;
+            padding: 0.8rem 2rem; border-radius: 9999px; box-shadow: 0 10px 20px rgba(255, 42, 133, 0.4);
+            border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 1rem;
+        }
+        .btn-premium:hover { box-shadow: 0 15px 30px rgba(255, 42, 133, 0.6); transform: translateY(-3px) scale(1.05); }
+        .btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.3); color: white; }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: white; }
+
+        /* Modal ท้ายสุด */
+        .success-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        .success-modal.show { opacity: 1; pointer-events: auto; }
+        .modal-content { background: #0b1121; border: 2px solid #ff7eb3; border-radius: 2rem; padding: 2.5rem; text-align: center; transform: scale(0.7) translateY(50px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 50px rgba(255, 126, 179, 0.3); }
+        .success-modal.show .modal-content { transform: scale(1) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- พื้นหลังจักรวาล -->
+    <div class="galaxy-bg">
+        <div class="nebula" style="top: -10%; left: -10%; width: 400px; height: 400px; background: #8a2be2;"></div>
+        <div class="nebula" style="bottom: -20%; right: -10%; width: 500px; height: 500px; background: #ff2a85; animation-delay: -5s;"></div>
+        <div class="nebula" style="top: 40%; left: 30%; width: 300px; height: 300px; background: #4169e1; animation-delay: -2s;"></div>
+    </div>
+    <canvas id="star-canvas"></canvas>
+
+    <!-- ลิงก์เพลงหลักซ่อนไว้ -->
+    <audio id="bg-music" loop>
+        <!-- เปลี่ยนลิงก์เพลงตรงนี้ -->
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ================= PAGE 0: กล่องของขวัญ (Entry) ================= -->
+    <div id="page-0" class="page-container active flex flex-col items-center justify-center bg-black/60 backdrop-blur-md z-50">
+        <h1 class="font-mali text-3xl md:text-4xl text-white mb-10 font-bold tracking-wider" style="text-shadow: 0 0 20px #ff2a85;">มีของขวัญส่งถึงคุณนะ 💌</h1>
+        
+        <div class="gift-wrapper" onclick="startExperience()">
+            <div class="gift-glow"></div>
+            <div class="gift-btn w-32 h-32 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center border-4 border-white shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-white/20 w-full h-full transform -skew-x-12 -translate-x-full hover:animate-[shimmer_1.5s_infinite]"></div>
+                <i class="fa-solid fa-gift text-6xl text-white drop-shadow-md"></i>
+            </div>
+        </div>
+        
+        <p class="font-prompt text-gray-300 mt-8 text-sm tracking-widest uppercase animate-pulse">Tap to open</p>
+    </div>
+
+    <!-- ================= PAGE 1: ขูดการ์ด (Scratch to Reveal) ================= -->
+    <div id="page-1" class="page-container">
+        <div class="glass-card">
+            <div class="mb-4"><i class="fa-solid fa-moon text-4xl text-yellow-300 drop-shadow-[0_0_20px_rgba(253,224,71,0.8)]"></i></div>
+            <h2 class="font-mali text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">แด่คนเก่งของวันนี้</h2>
+            
+            <p class="font-prompt text-sm text-gray-400 mb-2 scratch-hint"><i class="fa-solid fa-hand-pointer mr-1"></i> ลองใช้นิ้วถูที่กระจกสิ...</p>
+            
+            <!-- โซนกระจกฝ้า -->
+            <div class="scratch-container relative shadow-lg">
+                <!-- ข้อความด้านใน -->
+                <div class="scratch-text-bg">
+                    <p class="font-prompt text-white text-lg leading-relaxed text-center" style="text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+                        เหนื่อยไหมวันนี้?<br>
+                        ให้เว็บนี้เป็นที่พักใจนะ<br>
+                        <span class="font-mali font-bold text-pink-400 text-xl mt-2 block">"เราเป็นกำลังใจให้เสมอ"</span>
+                    </p>
+                </div>
+                <!-- Canvas สำหรับขูดฝ้า -->
+                <canvas id="scratch-canvas"></canvas>
+            </div>
+            
+            <div id="next-btn-1" class="mt-6 opacity-0 transition-opacity duration-1000 transform translate-y-4">
+                <button onclick="goToPage(2)" class="btn-premium">ดูหน้าต่อไป <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 2: แกลลอรีรูป 3D & เพลง ================= -->
+    <div id="page-2" class="page-container">
+        <div class="glass-card !max-w-[460px]">
+            <h2 class="font-mali text-2xl font-bold mb-1 text-white">รอยยิ้มของคุณ 🤍</h2>
+            <p class="font-prompt text-xs text-gray-400 mb-2">ปัดซ้าย-ขวา เพื่อดูความทรงจำ</p>
+            
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper">
+                    <!-- ใส่รูปลงตรงนี้ -->
+                    <div class="swiper-slide"><img src="1.jpeg"></div>
+<div class="swiper-slide"><img src="2.jpeg"></div>
+<div class="swiper-slide"><img src="3.jpeg"></div>
+<div class="swiper-slide"><img src="4.jpeg"></div>
+<div class="swiper-slide"><img src="5.jpeg"></div>
+<div class="swiper-slide"><img src="6.jpeg"></div>
+<div class="swiper-slide"><img src="7.jpeg"></div>
+<div class="swiper-slide"><img src="8.jpeg"></div>
+<div class="swiper-slide"><img src="9.jpeg"></div>
+<div class="swiper-slide"><img src="10.jpeg"></div>
+<div class="swiper-slide"><img src="11.jpeg"></div>
+<div class="swiper-slide"><img src="12.jpeg"></div>
+<div class="swiper-slide"><img src="13.jpeg"></div>
+<div class="swiper-slide"><img src="14.jpeg"></div>
+
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <div class="bg-black/30 rounded-2xl p-4 flex flex-col items-center border border-white/10 relative shadow-[0_10px_30px_rgba(0,0,0,0.3)] mt-2">
+                <div class="flex items-center gap-4 w-full mb-2 z-10 px-2">
+                    <div class="vinyl-record" id="vinyl"><div class="vinyl-center"></div></div>
+                    <div class="text-left flex-1">
+                        <p class="font-mali text-sm font-bold text-pink-300">ตั้งใจเลือกเพลงนี้ให้เลย 🎵</p>
+                        <p class="font-prompt text-[10px] text-gray-400">กดเล่นเพลงเพื่อนั่งพักผ่อนนะ</p>
+                    </div>
+                </div>
+                <audio id="audio-controls" controls class="z-10 w-full opacity-90"></audio>
+            </div>
+
+            <div class="mt-6 flex justify-between items-center w-full px-1">
+                <button onclick="goToPage(1)" class="text-gray-400 hover:text-white font-mali transition-colors text-sm px-2 py-1"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
+                <button onclick="goToPage(3)" class="btn-premium !py-2 !px-5 text-sm !font-mali">ชาร์จพลัง <i class="fa-solid fa-bolt"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 3: ชาร์จพลังส่งโคมลอย ================= -->
+    <div id="page-3" class="page-container">
+        <div class="glass-card relative overflow-hidden">
+            <h2 class="font-mali text-xl font-bold mb-6 text-white text-center">มาปล่อยความเศร้าทิ้งไปกัน 🎐</h2>
+            
+            <p class="font-prompt text-sm text-gray-300 mb-8 px-4 text-center">
+                สูดหายใจลึกๆ...<br>เรื่องไม่สบายใจ ปล่อยให้มันลอยไปกับโคมนะ
+            </p>
+
+            <!-- ปุ่มกดค้างเพื่อชาร์จ -->
+            <div class="charge-container" id="chargeBtn">
+                <svg width="120" height="120" viewBox="0 0 120 120" class="absolute">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff2a85" />
+                            <stop offset="100%" stop-color="#8a2be2" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="60" cy="60" r="54" class="charge-circle-bg" />
+                    <circle cx="60" cy="60" r="54" class="charge-circle" id="chargeProgress" />
+                </svg>
+                <div class="w-24 h-24 bg-gradient-to-br from-gray-800 to-black rounded-full flex items-center justify-center border border-white/20 shadow-inner z-10">
+                    <i class="fa-solid fa-fingerprint charge-icon" id="chargeIcon"></i>
+                </div>
+            </div>
+
+            <p class="font-prompt text-xs text-pink-400 mt-6 animate-pulse text-center" id="chargeText">👇 กดนิ้วค้างไว้ที่ปุ่ม 👇</p>
+
+            <div class="mt-8 pt-6 border-t border-white/10 w-full text-center">
+                <button onclick="goToPage(4)" id="btn-to-4" class="btn-premium w-full !bg-gradient-to-r !from-emerald-400 !to-teal-500 shadow-[0_0_20px_rgba(52,211,153,0.4)] opacity-0 pointer-events-none transition-all duration-1000">
+                    <i class="fa-solid fa-camera"></i> ขอดูรอยยิ้มคนเก่งหน่อย!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 4: ถ่ายรูป/แนบรูป (รอล้างรูป) ================= -->
+    <div id="page-4" class="page-container">
+        <div class="glass-card w-full">
+            <h2 class="font-mali text-xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300">
+                <i class="fa-solid fa-face-smile-beam text-pink-400 mr-2"></i> รอยยิ้มของคุณสำคัญที่สุดนะ
+            </h2>
+            <p class="font-prompt text-xs text-gray-400 mb-4">ถ่ายรูปตัวเองตอนนี้ หรือเอารูปที่น่ารักที่สุดในเครื่องมาก็ได้</p>
+
+            <div id="camera-section">
+                <div class="camera-container mb-4 shadow-2xl relative group">
+                    <video id="videoElement" autoplay playsinline muted></video>
+                    <div id="flash-effect" class="camera-flash"></div>
+                    
+                    <div id="camera-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0f1d] z-10 p-4 transition-opacity">
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-3 border border-white/10">
+                            <i class="fa-solid fa-camera-retro text-2xl text-gray-400"></i>
+                        </div>
+                        <p class="text-xs text-gray-400 text-center font-prompt" id="cam-status">รอเปิดกล้องสักครู่...<br>(ต้องใช้เน็ต HTTPS นะ)</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-center mb-4">
+                    <button id="startBtn" class="btn-premium btn-outline flex-1 !text-xs !py-2.5">
+                        <i class="fa-solid fa-video"></i> เปิดกล้อง
+                    </button>
+                    <button id="snapBtn" class="btn-premium flex-1 !text-xs !py-2.5 opacity-50 pointer-events-none">
+                        <i class="fa-solid fa-bolt"></i> ถ่ายแชะ!
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-3 my-4 w-full justify-center">
+                    <div class="h-px bg-white/10 flex-1"></div><span class="text-[10px] text-gray-500 font-prompt tracking-wider uppercase">or</span><div class="h-px bg-white/10 flex-1"></div>
+                </div>
+
+                <label class="btn-premium btn-outline w-full !text-xs !py-2.5 cursor-pointer !bg-white/5">
+                    <i class="fa-solid fa-image"></i> อัปโหลดรูปภาพ
+                    <input type="file" id="uploadInput" accept="image/*">
+                </label>
+            </div>
+
+            <canvas id="photoCanvas"></canvas>
+
+            <!-- โพลารอยด์รอล้าง -->
+            <div id="polaroid-section" class="polaroid relative">
+                <div class="polaroid--container">
+                    < id="photoResult" src="" alt="Photo">
+                    <!-- ข้อความรอล้างรูป -->
+                    <div id="developing-text" class="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10 transition-opacity duration-1000">
+                        <p class="font-mali text-sm font-bold text-gray-800 animate-pulse">กำลังล้างรูปโพลารอยด์... ⏳</p>
+                    </div>
+                </div>
+                <div class="polaroid-caption text-center">รอยยิ้มคนเก่ง :)</div>
+            </div>
+
+            <div id="send-section" class="mt-6 hidden flex-col gap-3">
+                <button onclick="sendSmile()" class="btn-premium w-full !bg-gradient-to-r !from-green-400 !to-emerald-500 !shadow-[0_10px_20px_rgba(52,211,153,0.3)]">
+                    <i class="fa-solid fa-paper-plane"></i> ส่งรอยยิ้มให้เราชื่นใจ
+                </button>
+                <button onclick="retakePhoto()" class="text-xs text-gray-400 hover:text-white font-mali underline underline-offset-4 mt-2">ลองถ่ายใหม่อีกรอบ</button>
+            </div>
+
+            <div class="mt-6 flex justify-start">
+                <button onclick="goToPage(3)" id="backBtn4" class="text-gray-400 hover:text-white font-mali transition-colors text-sm"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Modal ท้ายสุด ================= -->
+    <div id="successModal" class="success-modal">
+        <div class="modal-content text-white">
+            <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(52,211,153,0.5)] border-4 border-[#0b1121]">
+                <i class="fa-solid fa-check text-4xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300 font-mali">ได้รับรอยยิ้มแล้วนะ!</h2>
+            <p class="font-prompt text-gray-300 text-sm mb-8 leading-relaxed">
+                เก็บรอยยิ้มนี้ไว้ให้ดีนะ<br>เพราะมันเหมาะกับเธอที่สุดเลย 🤍<br>หลับฝันดีนะครับ
+            </p>
+            <button onclick="closeModal()" class="btn-premium w-full !py-2.5 text-sm">รับทราบฮับ!</button>
+        </div>
+    </div>
+
+    <!-- ================= โค้ด JAVASCRIPT ระบบล้ำๆ ================= -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // --- 1. Parallax Stars Background ---
+        const sCanvas = document.getElementById('star-canvas'); const sCtx = sCanvas.getContext('2d');
+        let stars = []; let mousePos = { x: window.innerWidth/2, y: window.innerHeight/2 };
+        function resizeSC() { sCanvas.width = window.innerWidth; sCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeSC); resizeSC();
+        window.addEventListener('mousemove', (e) => { mousePos.x = e.clientX; mousePos.y = e.clientY; });
+        
+        class Star {
+            constructor() {
+                this.x = Math.random() * sCanvas.width; this.y = Math.random() * sCanvas.height;
+                this.z = Math.random() * 2 + 0.1; // ความลึก
+                this.size = (Math.random() * 1.5 + 0.5) / this.z;
+                this.baseAlpha = Math.random() * 0.5 + 0.1;
+                this.alpha = this.baseAlpha;
+                this.pulseSpeed = Math.random() * 0.02 + 0.005;
+            }
+            update() {
+                // ขยับตามเมาส์แบบ Parallax (ดาวไกลขยับน้อย ดาวใกล้ขยับเยอะ)
+                let dx = (mousePos.x - sCanvas.width/2) * 0.0005 / this.z;
+                let dy = (mousePos.y - sCanvas.height/2) * 0.0005 / this.z;
+                this.x -= dx; this.y -= dy;
+                
+                // วนลูปขอบจอ
+                if (this.x < 0) this.x = sCanvas.width; else if (this.x > sCanvas.width) this.x = 0;
+                if (this.y < 0) this.y = sCanvas.height; else if (this.y > sCanvas.height) this.y = 0;
+                
+                // กระพริบ
+                this.alpha = this.baseAlpha + Math.sin(Date.now() * this.pulseSpeed) * 0.2;
+            }
+            draw() { sCtx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`; sCtx.beginPath(); sCtx.arc(this.x, this.y, this.size, 0, Math.PI*2); sCtx.fill(); }
+        }
+        for(let i=0; i<150; i++) stars.push(new Star());
+        function animStars() { sCtx.clearRect(0,0,sCanvas.width,sCanvas.height); stars.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animStars); }
+        animStars();
+
+        // --- 2. Navigation & Setup ---
+        const bgMusic = document.getElementById('bg-music');
+        const audioControls = document.getElementById('audio-controls');
+        audioControls.src = bgMusic.querySelector('source').src;
+
+        function startExperience() {
+            audioControls.volume = 0.5; audioControls.play().catch(()=>{}); bgMusic.play().catch(()=>{});
+            goToPage(1);
+            setTimeout(initScratchCard, 1000); // เริ่มระบบขูดหลังเปลี่ยนหน้า
+        }
+        audioControls.addEventListener('play', () => bgMusic.play());
+        audioControls.addEventListener('pause', () => bgMusic.pause());
+
+        function goToPage(pageNum) {
+            document.querySelectorAll('.page-container').forEach(page => page.classList.remove('active'));
+            document.getElementById(`page-${pageNum}`).classList.add('active');
+            if(pageNum === 2) setTimeout(() => swiper.update(), 100);
+            if(pageNum !== 4 && stream) stopCamera();
+        }
+
+        // --- 3. ระบบขูดการ์ด (Scratch Card) สุดเจ๋ง ---
+        function initScratchCard() {
+            const canvas = document.getElementById('scratch-canvas');
+            const ctx = canvas.getContext('2d');
+            const container = document.querySelector('.scratch-container');
+            canvas.width = container.offsetWidth; canvas.height = container.offsetHeight;
+
+            // เทสีเทา/ฝ้า ทับลงไป
+            ctx.fillStyle = '#64748b'; // สีฝ้า
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // วาดตัวหนังสือบนฝ้า
+            ctx.font = "18px 'Prompt', sans-serif";
+            ctx.fillStyle = "#cbd5e1";
+            ctx.textAlign = "center";
+            ctx.fillText("ใช้นิ้วถูเพื่อลบฝ้าออกสิ", canvas.width/2, canvas.height/2);
+
+            let isDrawing = false;
+            let scratchedPixels = 0;
+            const totalPixels = canvas.width * canvas.height;
+            let isRevealed = false;
+
+            function getMousePos(evt) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+                const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+
+            function scratch(evt) {
+                if (!isDrawing) return;
+                evt.preventDefault(); // ป้องกันจอมือถือเลื่อนตอนขูด
+                const pos = getMousePos(evt);
+                ctx.globalCompositeOperation = 'destination-out'; // ทำให้สีโปร่งใส (ขูดออก)
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 25, 0, 2 * Math.PI); // ขนาดนิ้วขูด
+                ctx.fill();
+                
+                // เช็คว่าขูดไปเยอะหรือยัง (ถ้าเกิน 40% ให้เปิดหมดเลย)
+                scratchedPixels += Math.PI * 25 * 25; 
+                if(!isRevealed && scratchedPixels > totalPixels * 0.4) {
+                    isRevealed = true;
+                    canvas.style.transition = "opacity 0.8s";
+                    canvas.style.opacity = "0"; // เฟดหายไป
+                    setTimeout(() => { 
+                        canvas.style.display = "none"; 
+                        document.getElementById('next-btn-1').classList.remove('opacity-0', 'translate-y-4');
+                    }, 800);
+                }
+            }
+
+            canvas.addEventListener('mousedown', () => { isDrawing = true; });
+            canvas.addEventListener('mouseup', () => { isDrawing = false; });
+            canvas.addEventListener('mousemove', scratch);
+            canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, {passive: false});
+            canvas.addEventListener('touchend', () => { isDrawing = false; });
+            canvas.addEventListener('touchmove', scratch, {passive: false});
+        }
+
+        // --- 4. Swiper 3D & Vinyl ---
+        const swiper = new Swiper(".mySwiper", {
+            effect: "coverflow", grabCursor: true, centeredSlides: true, slidesPerView: "auto", loop: true,
+            autoplay: { delay: 3000, disableOnInteraction: false },
+            coverflowEffect: { rotate: 20, stretch: 0, depth: 200, modifier: 1, slideShadows: true },
+            pagination: { el: ".swiper-pagination", dynamicBullets: true },
+        });
+        const vinyl = document.getElementById('vinyl');
+        audioControls.addEventListener('play', () => vinyl.classList.add('playing'));
+        audioControls.addEventListener('pause', () => vinyl.classList.remove('playing'));
+
+        // --- 5. ระบบ Hold to Charge & โคมลอย ---
+        const chargeBtn = document.getElementById('chargeBtn');
+        const chargeProgress = document.getElementById('chargeProgress');
+        const chargeIcon = document.getElementById('chargeIcon');
+        const chargeText = document.getElementById('chargeText');
+        const btnTo4 = document.getElementById('btn-to-4');
+        let chargeTimer;
+        let progress = 0;
+        const maxCircumference = 339.292; // ค่าของวงกลม r=54
+
+        function startCharge(e) {
+            if(e) e.preventDefault();
+            if(progress >= 100) return;
+            chargeBtn.classList.add('charging');
+            chargeText.innerText = "ทิ้งความเศร้าไปนะ...";
+            
+            chargeTimer = setInterval(() => {
+                progress += 1.5; // ความเร็วในการชาร์จ
+                if(progress > 100) progress = 100;
+                
+                // อัปเดตเส้นวงกลม
+                const offset = maxCircumference - (progress / 100) * maxCircumference;
+                chargeProgress.style.strokeDashoffset = offset;
+
+                if(progress >= 100) {
+                    clearInterval(chargeTimer);
+                    chargeComplete();
+                }
+            }, 30);
+        }
+
+        function stopCharge() {
+            clearInterval(chargeTimer);
+            chargeBtn.classList.remove('charging');
+            if(progress < 100) {
+                // ถ้าปล่อยนิ้วก่อนเต็ม ให้ลดหลอดกลับไป 0
+                const decayTimer = setInterval(() => {
+                    progress -= 3;
+                    if(progress <= 0) { progress = 0; clearInterval(decayTimer); chargeText.innerText = "👇 กดนิ้วค้างไว้ที่ปุ่ม 👇"; }
+                    const offset = maxCircumference - (progress / 100) * maxCircumference;
+                    chargeProgress.style.strokeDashoffset = offset;
+                }, 20);
+            }
+        }
+
+        function chargeComplete() {
+            chargeBtn.classList.remove('charging');
+            chargeIcon.classList.replace('fa-fingerprint', 'fa-check');
+            chargeIcon.style.color = "#34d399";
+            chargeText.innerText = "ปล่อยโคมลอยแล้ว! 🎐";
+            
+            // ปล่อยโคมลอย 20 ดวง
+            for(let i=0; i<20; i++) {
+                setTimeout(createLantern, Math.random() * 1500);
+            }
+
+            // โชว์ปุ่มไปหน้าถัดไป
+            setTimeout(() => {
+                btnTo4.classList.remove('opacity-0', 'pointer-events-none');
+            }, 1500);
+        }
+
+        function createLantern() {
+            const lantern = document.createElement('div');
+            lantern.className = 'lantern';
+            lantern.style.left = Math.random() * 90 + 5 + '%';
+            
+            const duration = Math.random() * 4 + 4; // 4-8 วิ
+            const drift = (Math.random() - 0.5) * 200; // ปลิวซ้ายขวา
+            const rot = (Math.random() - 0.5) * 45; // เอียง
+            
+            lantern.style.setProperty('--duration', `${duration}s`);
+            lantern.style.setProperty('--drift', `${drift}px`);
+            lantern.style.setProperty('--rot', `${rot}deg`);
+            
+            const size = Math.random() * 0.5 + 0.8;
+            lantern.style.transform = `scale(${size})`;
+
+            document.body.appendChild(lantern);
+            setTimeout(() => lantern.remove(), duration * 1000);
+        }
+
+        chargeBtn.addEventListener('mousedown', startCharge);
+        chargeBtn.addEventListener('touchstart', startCharge, {passive: false});
+        window.addEventListener('mouseup', stopCharge);
+        window.addEventListener('touchend', stopCharge);
+
+        // --- 6. ระบบกล้อง & โพลารอยด์รอล้างรูป ---
+        const video = document.getElementById('videoElement');
+        const photoCanvasEl = document.getElementById('photoCanvas');
+        const photoResult = document.getElementById('photoResult');
+        const snapBtn = document.getElementById('snapBtn');
+        const startBtn = document.getElementById('startBtn');
+        const uploadInput = document.getElementById('uploadInput');
+        const devText = document.getElementById('developing-text');
+        let stream = null;
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                video.setAttribute('autoplay', ''); video.setAttribute('muted', ''); video.setAttribute('playsinline', '');
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                video.srcObject = stream; await video.play();
+                document.getElementById('camera-placeholder').style.opacity = '0';
+                setTimeout(()=> document.getElementById('camera-placeholder').style.display = 'none', 300);
+                snapBtn.classList.remove('opacity-50', 'pointer-events-none');
+                startBtn.innerHTML = '<i class="fa-solid fa-video"></i> พร้อมแล้ว!';
+                startBtn.classList.replace('btn-outline', 'bg-green-500'); startBtn.classList.replace('text-white', 'text-white');
+            } catch (err) {
+                document.getElementById('camera-placeholder').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-3xl text-pink-500 mb-2"></i><p class="text-[10px] text-gray-300">กล้องถูกบล็อก / หรือไม่ได้เปิดผ่านเว็บ</p>`;
+            }
+        });
+
+        snapBtn.addEventListener('click', () => {
+            if(!stream) return;
+            triggerFlash();
+            photoCanvasEl.width = video.videoWidth; photoCanvasEl.height = video.videoHeight;
+            const ctx = photoCanvasEl.getContext('2d');
+            ctx.translate(photoCanvasEl.width, 0); ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, photoCanvasEl.width, photoCanvasEl.height);
+            displayPolaroid(photoCanvasEl.toDataURL('image/png'));
+            stopCamera();
+        });
+
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                triggerFlash();
+                const reader = new FileReader();
+                reader.onload = (event) => { displayPolaroid(event.target.result); stopCamera(); };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function triggerFlash() {
+            const flash = document.getElementById('flash-effect');
+            flash.style.animation = 'none'; flash.offsetHeight; flash.style.animation = 'flash-anim 0.6s ease-out';
+        }
+
+        function displayPolaroid(imageUrl) {
+            // รีเซ็ตคลาสรูปล้างเสร็จ
+            photoResult.classList.remove('developed');
+            devText.style.opacity = '1';
+            photoResult.src = imageUrl;
+
+            document.getElementById('camera-section').style.display = 'none';
+            document.getElementById('backBtn4').style.display = 'none';
+            
+            const polaroid = document.getElementById('polaroid-section');
+            polaroid.style.display = 'block'; polaroid.style.transform = 'scale(0) rotate(-15deg)';
+            
+            // อนิเมชั่นโพลารอยด์เด้งขึ้นมา
+            setTimeout(() => {
+                polaroid.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                polaroid.style.transform = 'scale(1) rotate(-3deg)';
+            }, 50);
+
+            // จำลองการล้างรูป 3 วินาที
+            setTimeout(() => {
+                devText.style.opacity = '0'; // ซ่อนข้อความกำลังล้าง
+                photoResult.classList.add('developed'); // ใส่ฟิลเตอร์ให้สีชัดขึ้น
+                document.getElementById('send-section').style.display = 'flex'; // โชว์ปุ่มส่ง
+            }, 3000);
+        }
+
+        function stopCamera() { if(stream) { stream.getTracks().forEach(track => track.stop()); stream = null; video.srcObject = null; } }
+
+        function retakePhoto() {
+            document.getElementById('polaroid-section').style.display = 'none'; document.getElementById('send-section').style.display = 'none';
+            document.getElementById('camera-section').style.display = 'block'; document.getElementById('backBtn4').style.display = 'block';
+            document.getElementById('camera-placeholder').style.display = 'flex'; document.getElementById('camera-placeholder').style.opacity = '1';
+            snapBtn.classList.add('opacity-50', 'pointer-events-none');
+            startBtn.innerHTML = '<i class="fa-solid fa-video"></i> เปิดกล้อง'; startBtn.className = 'btn-premium btn-outline flex-1 !text-xs !py-2.5';
+            uploadInput.value = '';
+        }
+
+        function sendSmile() { document.getElementById('successModal').classList.add('show'); }
+        function closeModal() { document.getElementById('successModal').classList.remove('show'); retakePhoto(); goToPage(3); }
+
+    </script>
+</body>
+</html>
